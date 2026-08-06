@@ -40,6 +40,11 @@ std::runtime_error sqlite_error(sqlite3* database, const std::string& operation)
     return std::runtime_error(operation + ": " + sqlite3_errmsg(database));
 }
 
+std::string column_text(sqlite3_stmt* statement, int column) {
+    const unsigned char* value = sqlite3_column_text(statement, column);
+    return value == nullptr ? std::string{} : reinterpret_cast<const char*>(value);
+}
+
 }  // namespace
 
 namespace database {
@@ -97,6 +102,12 @@ InsertResult Database::insert(Table table, int id, const std::string& name) {
 
 void Database::truncate(Table table) { execute(truncate_query(table)); }
 
+std::vector<JoinedRow> Database::intersection() {
+    return select_joined_rows("SELECT A.id, A.name, B.name "
+                              "FROM A INNER JOIN B ON A.id = B.id "
+                              "ORDER BY A.id");
+}
+
 void Database::execute(const std::string& query) {
     char* raw_error = nullptr;
     const int result = sqlite3_exec(m_Database, query.c_str(), nullptr, nullptr, &raw_error);
@@ -107,6 +118,30 @@ void Database::execute(const std::string& query) {
     const std::string message = raw_error == nullptr ? sqlite3_errmsg(m_Database) : raw_error;
     sqlite3_free(raw_error);
     throw std::runtime_error("Unable to execute SQL: " + message);
+}
+
+std::vector<JoinedRow> Database::select_joined_rows(const std::string& query) {
+    sqlite3_stmt* raw_statement = nullptr;
+    if (sqlite3_prepare_v2(m_Database, query.c_str(), -1, &raw_statement, nullptr) !=
+        SQLITE_OK) {
+        throw sqlite_error(m_Database, "Unable to prepare SELECT");
+    }
+    Statement statement(raw_statement);
+
+    std::vector<JoinedRow> rows;
+    int step_result = sqlite3_step(statement.get());
+    while (step_result == SQLITE_ROW) {
+        rows.push_back(JoinedRow{ sqlite3_column_int(statement.get(), 0),
+                                  column_text(statement.get(), 1),
+                                  column_text(statement.get(), 2) });
+        step_result = sqlite3_step(statement.get());
+    }
+
+    if (step_result != SQLITE_DONE) {
+        throw sqlite_error(m_Database, "Unable to execute SELECT");
+    }
+
+    return rows;
 }
 
 }  // namespace database

@@ -7,6 +7,7 @@
  */
 
 #include <string>
+#include <vector>
 
 struct sqlite3;
 
@@ -17,6 +18,13 @@ enum class Table { A, B };
 
 /// Результат добавления записи в таблицу.
 enum class InsertResult { Inserted, Duplicate };
+
+/// Строка результата объединения таблиц A и B.
+struct JoinedRow {
+    int id;
+    std::string a_name;
+    std::string b_name;
+};
 
 /**
  * @brief Управляет in-memory базой SQLite с таблицами A и B.
@@ -41,9 +49,15 @@ public:
     /// Удаляет все записи из выбранной таблицы.
     void truncate(Table table);
 
+    /// Возвращает строки с идентификаторами, присутствующими в обеих таблицах.
+    std::vector<JoinedRow> intersection();
+
 private:
     /// Выполняет SQL-запрос, который не возвращает строки.
     void execute(const std::string& query);
+
+    /// Выполняет запрос объединения и возвращает его строки.
+    std::vector<JoinedRow> select_joined_rows(const std::string& query);
 
     /// Соединение с SQLite.
     sqlite3* m_Database = nullptr;
