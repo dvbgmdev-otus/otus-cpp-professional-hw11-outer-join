@@ -61,6 +61,14 @@ bool parse_id(const std::string& value, int& id) {
 
 std::string error_response(const std::string& message) { return "ERR " + message + '\n'; }
 
+std::string rows_response(const std::vector<database::JoinedRow>& rows) {
+    std::string response;
+    for (const database::JoinedRow& row : rows) {
+        response += std::to_string(row.id) + ',' + row.a_name + ',' + row.b_name + '\n';
+    }
+    return response + OK_RESPONSE;
+}
+
 }  // namespace
 
 CommandProcessor::CommandProcessor(database::Database& database) : m_Database(database) {}
@@ -111,6 +119,30 @@ std::string CommandProcessor::process(const std::string& command) {
             return error_response(error.what());
         }
         return OK_RESPONSE;
+    }
+
+    if (!tokens.empty() && tokens[0] == "INTERSECTION") {
+        if (tokens.size() != 1) {
+            return error_response("invalid arguments");
+        }
+
+        try {
+            return rows_response(m_Database.intersection());
+        } catch (const std::exception& error) {
+            return error_response(error.what());
+        }
+    }
+
+    if (!tokens.empty() && tokens[0] == "SYMMETRIC_DIFFERENCE") {
+        if (tokens.size() != 1) {
+            return error_response("invalid arguments");
+        }
+
+        try {
+            return rows_response(m_Database.symmetric_difference());
+        } catch (const std::exception& error) {
+            return error_response(error.what());
+        }
     }
 
     return error_response("unknown command");

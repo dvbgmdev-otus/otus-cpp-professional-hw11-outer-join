@@ -57,3 +57,41 @@ TEST_F(CommandProcessorTest, Truncate_WhenTableBHasRows_ClearsTable) {
 }
 
 #endif  // Part 2. Команда TRUNCATE
+
+#if (1)  // Part 3. Команды выборки
+
+// Test 3.1. Пересечение пустых таблиц возвращает только признак успеха.
+TEST_F(CommandProcessorTest, Intersection_WhenTablesAreEmpty_ReturnsOk) {
+    EXPECT_EQ("OK\n", processor.process("INTERSECTION"));
+}
+
+// Test 3.2. Пересечение возвращает общие строки в формате протокола.
+TEST_F(CommandProcessorTest, Intersection_WhenTablesOverlap_ReturnsRowsAndOk) {
+    ASSERT_EQ("OK\n", processor.process("INSERT A 4 quality"));
+    ASSERT_EQ("OK\n", processor.process("INSERT A 2 frank"));
+    ASSERT_EQ("OK\n", processor.process("INSERT A 3 violation"));
+    ASSERT_EQ("OK\n", processor.process("INSERT B 6 flour"));
+    ASSERT_EQ("OK\n", processor.process("INSERT B 4 example"));
+    ASSERT_EQ("OK\n", processor.process("INSERT B 3 proposal"));
+
+    EXPECT_EQ("3,violation,proposal\n4,quality,example\nOK\n",
+              processor.process("INTERSECTION"));
+}
+
+// Test 3.3. Симметрическая разность пустых таблиц возвращает только признак успеха.
+TEST_F(CommandProcessorTest, SymmetricDifference_WhenTablesAreEmpty_ReturnsOk) {
+    EXPECT_EQ("OK\n", processor.process("SYMMETRIC_DIFFERENCE"));
+}
+
+// Test 3.4. Симметрическая разность возвращает уникальные строки с пустыми полями.
+TEST_F(CommandProcessorTest, SymmetricDifference_WhenTablesOverlap_ReturnsRowsAndOk) {
+    ASSERT_EQ("OK\n", processor.process("INSERT B 6 flour"));
+    ASSERT_EQ("OK\n", processor.process("INSERT A 3 violation"));
+    ASSERT_EQ("OK\n", processor.process("INSERT A 0 lean"));
+    ASSERT_EQ("OK\n", processor.process("INSERT B 3 proposal"));
+
+    EXPECT_EQ("0,lean,\n6,,flour\nOK\n",
+              processor.process("SYMMETRIC_DIFFERENCE"));
+}
+
+#endif  // Part 3. Команды выборки
