@@ -45,6 +45,7 @@ endif()
 if(1) # COVERAGE CONFIG BLOCK
     set(COVERAGE_SRC
         ${SRC_DIR}/database/database.cpp
+        ${SRC_DIR}/core/command_processor.cpp
         ${SRC_DIR}/async/async_command_processor.cpp
         ${SRC_DIR}/async/async_context.cpp
         ${SRC_DIR}/async/async_runtime.cpp

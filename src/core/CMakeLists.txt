@@ -6,6 +6,7 @@
 set(CORE_SRC ${CORE_NAME}_SRC)
 
 set(${CORE_SRC}
+    command_processor.cpp
     format/bulk_format.cpp
     bulk_processor.cpp
     io/bulk_writer.cpp
@@ -22,6 +23,10 @@ if(${CORE_SRC})
 
     target_include_directories(${CORE_NAME} PUBLIC
         ${PROJECT_INCLUDE_DIR}
+    )
+
+    target_link_libraries(${CORE_NAME} PRIVATE
+        database
     )
 
     configure_compile_target(${CORE_NAME})

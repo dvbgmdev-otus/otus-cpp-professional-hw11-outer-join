@@ -89,6 +89,10 @@ add_unit_test(database_test SOURCES
     LIBRARIES database
 )
 
+add_unit_test(command_processor_test SOURCES
+    ${UNIT_TEST_DIR}/command_processor_test.cpp
+)
+
 add_test(
     NAME self_check
     COMMAND ${UNIT_TEST_DIR}/self_check.sh $<TARGET_FILE:${PROJECT_NAME}>
