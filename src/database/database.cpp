@@ -108,6 +108,17 @@ std::vector<JoinedRow> Database::intersection() {
                               "ORDER BY A.id");
 }
 
+std::vector<JoinedRow> Database::symmetric_difference() {
+    return select_joined_rows("SELECT A.id AS id, A.name AS a_name, NULL AS b_name "
+                              "FROM A LEFT JOIN B ON A.id = B.id "
+                              "WHERE B.id IS NULL "
+                              "UNION ALL "
+                              "SELECT B.id AS id, NULL AS a_name, B.name AS b_name "
+                              "FROM B LEFT JOIN A ON B.id = A.id "
+                              "WHERE A.id IS NULL "
+                              "ORDER BY id");
+}
+
 void Database::execute(const std::string& query) {
     char* raw_error = nullptr;
     const int result = sqlite3_exec(m_Database, query.c_str(), nullptr, nullptr, &raw_error);

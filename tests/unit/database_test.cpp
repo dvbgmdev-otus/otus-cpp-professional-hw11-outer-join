@@ -132,3 +132,54 @@ TEST_F(DatabaseTest, Intersection_WhenRowsInsertedOutOfOrder_ReturnsRowsOrderedB
 }
 
 #endif  // Part 3. Пересечение таблиц
+
+#if (1)  // Part 4. Симметрическая разность таблиц
+
+// Test 4.1. Симметрическая разность пустых таблиц не содержит строк.
+TEST_F(DatabaseTest, SymmetricDifference_WhenTablesAreEmpty_ReturnsEmptyResult) {
+    EXPECT_TRUE(test_database.symmetric_difference().empty());
+}
+
+// Test 4.2. Результат содержит только уникальные для каждой таблицы строки.
+TEST_F(DatabaseTest, SymmetricDifference_WhenTablesOverlap_ReturnsExclusiveRows) {
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::A, 0, "lean"));
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::A, 3, "violation"));
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::B, 3, "proposal"));
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::B, 6, "flour"));
+
+    const std::vector<database::JoinedRow> rows = test_database.symmetric_difference();
+
+    ASSERT_EQ(2U, rows.size());
+    EXPECT_EQ(0, rows[0].id);
+    EXPECT_EQ("lean", rows[0].a_name);
+    EXPECT_TRUE(rows[0].b_name.empty());
+    EXPECT_EQ(6, rows[1].id);
+    EXPECT_TRUE(rows[1].a_name.empty());
+    EXPECT_EQ("flour", rows[1].b_name);
+}
+
+// Test 4.3. Строки симметрической разности упорядочены по идентификатору.
+TEST_F(DatabaseTest, SymmetricDifference_WhenRowsInsertedOutOfOrder_ReturnsRowsOrderedById) {
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::B, 8, "selection"));
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::A, 2, "frank"));
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::B, 7, "wonder"));
+    ASSERT_EQ(database::InsertResult::Inserted,
+              test_database.insert(database::Table::A, 1, "sweater"));
+
+    const std::vector<database::JoinedRow> rows = test_database.symmetric_difference();
+
+    ASSERT_EQ(4U, rows.size());
+    EXPECT_EQ(1, rows[0].id);
+    EXPECT_EQ(2, rows[1].id);
+    EXPECT_EQ(7, rows[2].id);
+    EXPECT_EQ(8, rows[3].id);
+}
+
+#endif  // Part 4. Симметрическая разность таблиц

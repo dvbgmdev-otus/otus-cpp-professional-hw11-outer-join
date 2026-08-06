@@ -52,6 +52,9 @@ public:
     /// Возвращает строки с идентификаторами, присутствующими в обеих таблицах.
     std::vector<JoinedRow> intersection();
 
+    /// Возвращает строки с идентификаторами, присутствующими только в одной таблице.
+    std::vector<JoinedRow> symmetric_difference();
+
 private:
     /// Выполняет SQL-запрос, который не возвращает строки.
     void execute(const std::string& query);
