@@ -77,8 +77,8 @@ send_commands() {
 
 # Test 1.1. Сервер воспроизводит ввод и ожидаемый вывод из TASK.md.
 run_task_scenario() {
-    local commands=$'INSERT A 0 lean\nINSERT A 0 understand\nINSERT A 1 sweater\nINSERT A 2 frank\nINSERT A 3 violation\nINSERT A 4 quality\nINSERT A 5 precision\nINSERT B 3 proposal\nINSERT B 4 example\nINSERT B 5 lake\nINSERT B 6 flour\nINSERT B 7 wonder\nINSERT B 8 selection\nINTERSECTION\nSYMMETRIC_DIFFERENCE\nTRUNCATE A\n'
-    local expected=$'OK\nERR duplicate 0\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n3,violation,proposal\n4,quality,example\n5,precision,lake\nOK\n0,lean,\n1,sweater,\n2,frank,\n6,,flour\n7,,wonder\n8,,selection\nOK\nOK'
+    local commands=$'TRUNCATE A\nTRUNCATE B\nINSERT A 0 lean\nINSERT A 0 understand\nINSERT A 1 sweater\nINSERT A 2 frank\nINSERT A 3 violation\nINSERT A 4 quality\nINSERT A 5 precision\nINSERT B 3 proposal\nINSERT B 4 example\nINSERT B 5 lake\nINSERT B 6 flour\nINSERT B 7 wonder\nINSERT B 8 selection\nINTERSECTION\nSYMMETRIC_DIFFERENCE\n'
+    local expected=$'OK\nOK\nOK\nERR duplicate 0\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\nOK\n3,violation,proposal\n4,quality,example\n5,precision,lake\nOK\n0,lean,\n1,sweater,\n2,frank,\n6,,flour\n7,,wonder\n8,,selection\nOK'
 
     check_equal "TASK.md scenario" "$expected" "$(send_commands "$commands")"
     log_ok "Passed: TASK.md scenario"
