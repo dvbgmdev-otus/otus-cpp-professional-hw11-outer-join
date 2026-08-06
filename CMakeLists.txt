@@ -21,6 +21,7 @@ if(1) # PROJECT CONFIG BLOCK
         ${SRC_DIR}/core/format
         ${SRC_DIR}/core/io
         ${SRC_DIR}/core/utils
+        ${SRC_DIR}/database
         ${SRC_DIR}/main
         ${SRC_DIR}/server
     )
@@ -43,6 +44,7 @@ endif()
 
 if(1) # COVERAGE CONFIG BLOCK
     set(COVERAGE_SRC
+        ${SRC_DIR}/database/database.cpp
         ${SRC_DIR}/async/async_command_processor.cpp
         ${SRC_DIR}/async/async_context.cpp
         ${SRC_DIR}/async/async_runtime.cpp
@@ -56,6 +58,10 @@ if(1) # COVERAGE CONFIG BLOCK
         ${SRC_DIR}/server/tcp_server.cpp
         ${SRC_DIR}/server/tcp_session.cpp
     )
+endif()
+
+if(1) # DATABASE LIBRARY BLOCK
+    add_subdirectory(${SRC_DIR}/database ${CMAKE_BINARY_DIR}/database)
 endif()
 
 if(1) # CORE LIBRARY BLOCK
