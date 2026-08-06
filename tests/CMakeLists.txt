@@ -45,43 +45,8 @@ add_unit_test(empty_test SOURCES
     ${UNIT_TEST_DIR}/empty_test.cpp
 )
 
-add_unit_test(async_test SOURCES
-    ${UNIT_TEST_DIR}/async_test.cpp
-    LIBRARIES async
-)
-
-add_unit_test(async_context_test SOURCES
-    ${UNIT_TEST_DIR}/async_context_test.cpp
-    LIBRARIES async
-)
-
-add_unit_test(async_command_processor_test SOURCES
-    ${UNIT_TEST_DIR}/async_command_processor_test.cpp
-    LIBRARIES async
-)
-
-add_unit_test(blocking_queue_test SOURCES
-    ${UNIT_TEST_DIR}/blocking_queue_test.cpp
-)
-
-add_unit_test(bulk_format_test SOURCES
-    ${UNIT_TEST_DIR}/bulk_format_test.cpp
-)
-
-add_unit_test(bulk_processor_test SOURCES
-    ${UNIT_TEST_DIR}/bulk_processor_test.cpp
-)
-
-add_unit_test(bulk_writer_test SOURCES
-    ${UNIT_TEST_DIR}/bulk_writer_test.cpp
-)
-
 add_unit_test(cli_args_test SOURCES
     ${UNIT_TEST_DIR}/cli_args_test.cpp
-)
-
-add_unit_test(command_reader_test SOURCES
-    ${UNIT_TEST_DIR}/command_reader_test.cpp
 )
 
 add_unit_test(database_test SOURCES

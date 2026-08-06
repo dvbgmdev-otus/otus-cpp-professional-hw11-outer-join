@@ -7,11 +7,7 @@ set(CORE_SRC ${CORE_NAME}_SRC)
 
 set(${CORE_SRC}
     command_processor.cpp
-    format/bulk_format.cpp
-    bulk_processor.cpp
-    io/bulk_writer.cpp
     cli/cli_args.cpp
-    io/command_reader.cpp
 )
 
 if(${CORE_SRC})
