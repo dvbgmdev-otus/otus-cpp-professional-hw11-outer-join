@@ -8,16 +8,16 @@
 
 #include <array>
 #include <cstddef>
+#include <deque>
 #include <memory>
+#include <string>
 
 #include <boost/asio/ip/tcp.hpp>
-
-#include "async.h"
 
 class CommandProcessor;
 
 /**
- * @brief Читает команды одного TCP-клиента и передаёт их библиотеке async.
+ * @brief Читает и обрабатывает команды одного TCP-клиента.
  * @ingroup main_group
  */
 class TcpSession : public std::enable_shared_from_this<TcpSession> {
@@ -30,9 +30,6 @@ public:
      */
     TcpSession(boost::asio::ip::tcp::socket socket, CommandProcessor& command_processor);
 
-    /// Завершает контекст обработки команд при уничтожении сессии.
-    ~TcpSession();
-
     TcpSession(const TcpSession&) = delete;
     TcpSession& operator=(const TcpSession&) = delete;
 
@@ -43,8 +40,8 @@ private:
     /// Планирует следующую операцию чтения.
     void read();
 
-    /// Завершает контекст обработки команд.
-    void disconnect();
+    /// Извлекает завершённые команды из входного буфера.
+    void process_commands();
 
     /// Размер буфера одной асинхронной операции чтения.
     static constexpr std::size_t BUFFER_SIZE = 4096;
@@ -55,11 +52,14 @@ private:
     /// Буфер очередной операции чтения.
     std::array<char, BUFFER_SIZE> m_buffer{};
 
-    /// Контекст клиента в библиотеке async.
-    async::handle_t m_handle;
-
     /// Общий обработчик команд сервера.
     CommandProcessor& m_CommandProcessor;
+
+    /// Накопленные входные данные, включая незавершённую команду.
+    std::string m_Input;
+
+    /// Ответы, ожидающие отправки клиенту.
+    std::deque<std::string> m_Responses;
 };
 
 #endif  // TCP_SESSION_H

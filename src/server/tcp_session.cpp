@@ -5,13 +5,11 @@
 #include <boost/asio/buffer.hpp>
 #include <boost/system/error_code.hpp>
 
+#include "command_processor.h"
+
 TcpSession::TcpSession(boost::asio::ip::tcp::socket socket,
                        CommandProcessor& command_processor)
-    : m_socket(std::move(socket)),
-      m_handle(async::connect(1)),
-      m_CommandProcessor(command_processor) {}
-
-TcpSession::~TcpSession() { disconnect(); }
+    : m_socket(std::move(socket)), m_CommandProcessor(command_processor) {}
 
 void TcpSession::start() { read(); }
 
@@ -21,11 +19,11 @@ void TcpSession::read() {
         boost::asio::buffer(m_buffer),
         [self](const boost::system::error_code& error, std::size_t received) {
             if (received > 0) {
-                async::receive(self->m_handle, self->m_buffer.data(), received);
+                self->m_Input.append(self->m_buffer.data(), received);
+                self->process_commands();
             }
 
             if (error) {
-                self->disconnect();
                 return;
             }
 
@@ -33,11 +31,13 @@ void TcpSession::read() {
         });
 }
 
-void TcpSession::disconnect() {
-    if (m_handle == nullptr) {
-        return;
-    }
+void TcpSession::process_commands() {
+    std::size_t delimiter = m_Input.find('\n');
+    while (delimiter != std::string::npos) {
+        const std::string command = m_Input.substr(0, delimiter);
+        m_Input.erase(0, delimiter + 1);
+        m_Responses.push_back(m_CommandProcessor.process(command));
 
-    async::disconnect(m_handle);
-    m_handle = nullptr;
+        delimiter = m_Input.find('\n');
+    }
 }

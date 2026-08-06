@@ -15,7 +15,7 @@ target_include_directories(${SERVER_NAME} PUBLIC
 )
 
 target_link_libraries(${SERVER_NAME} PRIVATE
-    async
+    ${CORE_NAME}
     Boost::system
     Threads::Threads
 )
