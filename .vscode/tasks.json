@@ -23,7 +23,7 @@
             "label": "Project: Run",
             "type": "shell",
             "command": "./prj",
-            "args": ["run", "9000", "3"],
+            "args": ["run", "9000"],
             "problemMatcher": []
         },
         {
