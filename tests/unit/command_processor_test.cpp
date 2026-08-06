@@ -95,3 +95,93 @@ TEST_F(CommandProcessorTest, SymmetricDifference_WhenTablesOverlap_ReturnsRowsAn
 }
 
 #endif  // Part 3. Команды выборки
+
+#if (1)  // Part 4. Неизвестные команды и таблицы
+
+// Test 4.1. Пустая строка возвращает ошибку неизвестной команды.
+TEST_F(CommandProcessorTest, Process_WhenCommandIsEmpty_ReturnsUnknownCommandError) {
+    EXPECT_EQ("ERR unknown command\n", processor.process(""));
+}
+
+// Test 4.2. Неизвестная команда возвращает ошибку.
+TEST_F(CommandProcessorTest, Process_WhenCommandIsUnknown_ReturnsUnknownCommandError) {
+    EXPECT_EQ("ERR unknown command\n", processor.process("SELECT"));
+}
+
+// Test 4.3. INSERT с неизвестной таблицей возвращает ошибку.
+TEST_F(CommandProcessorTest, Insert_WhenTableIsUnknown_ReturnsUnknownTableError) {
+    EXPECT_EQ("ERR unknown table\n", processor.process("INSERT C 1 name"));
+}
+
+// Test 4.4. TRUNCATE с неизвестной таблицей возвращает ошибку.
+TEST_F(CommandProcessorTest, Truncate_WhenTableIsUnknown_ReturnsUnknownTableError) {
+    EXPECT_EQ("ERR unknown table\n", processor.process("TRUNCATE C"));
+}
+
+#endif  // Part 4. Неизвестные команды и таблицы
+
+#if (1)  // Part 5. Неверное количество аргументов и разделители
+
+// Test 5.1. INSERT без имени возвращает ошибку аргументов.
+TEST_F(CommandProcessorTest, Insert_WhenNameIsMissing_ReturnsInvalidArgumentsError) {
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT A 1"));
+}
+
+// Test 5.2. INSERT с лишним аргументом возвращает ошибку.
+TEST_F(CommandProcessorTest, Insert_WhenExtraArgumentIsPassed_ReturnsInvalidArgumentsError) {
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT A 1 sweater extra"));
+}
+
+// Test 5.3. TRUNCATE с неверным количеством аргументов возвращает ошибку.
+TEST_F(CommandProcessorTest, Truncate_WhenArgumentCountIsInvalid_ReturnsError) {
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("TRUNCATE"));
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("TRUNCATE A extra"));
+}
+
+// Test 5.4. Команды выборки не принимают аргументы.
+TEST_F(CommandProcessorTest, SelectCommands_WhenArgumentIsPassed_ReturnInvalidArgumentsError) {
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("INTERSECTION extra"));
+    EXPECT_EQ("ERR invalid arguments\n",
+              processor.process("SYMMETRIC_DIFFERENCE extra"));
+}
+
+// Test 5.5. Повторные, начальные и конечные пробелы отклоняются.
+TEST_F(CommandProcessorTest, Process_WhenSpacesAreNotStrict_ReturnsError) {
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT  A 1 sweater"));
+    EXPECT_EQ("ERR unknown command\n", processor.process(" INSERT A 1 sweater"));
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT A 1 sweater "));
+}
+
+#endif  // Part 5. Неверное количество аргументов и разделители
+
+#if (1)  // Part 6. Неверный идентификатор
+
+// Test 6.1. Нечисловой идентификатор возвращает ошибку.
+TEST_F(CommandProcessorTest, Insert_WhenIdIsNotNumeric_ReturnsInvalidIdError) {
+    EXPECT_EQ("ERR invalid id\n", processor.process("INSERT A id sweater"));
+}
+
+// Test 6.2. Идентификатор с лишними символами возвращает ошибку.
+TEST_F(CommandProcessorTest, Insert_WhenIdHasTrailingCharacters_ReturnsInvalidIdError) {
+    EXPECT_EQ("ERR invalid id\n", processor.process("INSERT A 1x sweater"));
+}
+
+// Test 6.3. Идентификатор за пределами int возвращает ошибку.
+TEST_F(CommandProcessorTest, Insert_WhenIdExceedsIntRange_ReturnsInvalidIdError) {
+    EXPECT_EQ("ERR invalid id\n", processor.process("INSERT A 2147483648 sweater"));
+}
+
+// Test 6.4. Слишком длинное числовое значение возвращает ошибку.
+TEST_F(CommandProcessorTest, Insert_WhenIdExceedsParserRange_ReturnsInvalidIdError) {
+    EXPECT_EQ("ERR invalid id\n",
+              processor.process("INSERT A 999999999999999999999999 sweater"));
+}
+
+// Test 6.5. Ошибочная команда не изменяет содержимое таблицы.
+TEST_F(CommandProcessorTest, Insert_WhenCommandIsInvalid_KeepsDatabaseUnchanged) {
+    ASSERT_EQ("ERR invalid id\n", processor.process("INSERT A 1x sweater"));
+
+    EXPECT_EQ("OK\n", processor.process("INSERT A 1 sweater"));
+}
+
+#endif  // Part 6. Неверный идентификатор
