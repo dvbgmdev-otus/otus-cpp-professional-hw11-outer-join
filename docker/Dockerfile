@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     cmake \
     git \
     libboost-system-dev \
+    libsqlite3-dev \
     netcat-openbsd \
     clang-tidy \
     lcov \

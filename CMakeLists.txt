@@ -37,6 +37,7 @@ endif()
 
 if(1) # PROJECT DEPENDENCIES BLOCK
     find_package(Boost REQUIRED COMPONENTS system)
+    find_package(SQLite3 REQUIRED)
     find_package(Threads REQUIRED)
 endif()
 
