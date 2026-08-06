@@ -3,6 +3,7 @@
 #include <utility>
 
 #include <boost/asio/buffer.hpp>
+#include <boost/asio/write.hpp>
 #include <boost/system/error_code.hpp>
 
 #include "command_processor.h"
@@ -36,8 +37,30 @@ void TcpSession::process_commands() {
     while (delimiter != std::string::npos) {
         const std::string command = m_Input.substr(0, delimiter);
         m_Input.erase(0, delimiter + 1);
+
+        const bool write_in_progress = !m_Responses.empty();
         m_Responses.push_back(m_CommandProcessor.process(command));
+        if (!write_in_progress) {
+            write();
+        }
 
         delimiter = m_Input.find('\n');
     }
+}
+
+void TcpSession::write() {
+    std::shared_ptr<TcpSession> self = shared_from_this();
+    boost::asio::async_write(
+        m_socket,
+        boost::asio::buffer(m_Responses.front()),
+        [self](const boost::system::error_code& error, std::size_t) {
+            if (error) {
+                return;
+            }
+
+            self->m_Responses.pop_front();
+            if (!self->m_Responses.empty()) {
+                self->write();
+            }
+        });
 }
