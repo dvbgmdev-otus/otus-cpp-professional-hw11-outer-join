@@ -29,7 +29,7 @@ int main(int argc, const char* const argv[]) {
         signals.async_wait(
             [&io_context](const boost::system::error_code&, int) { io_context.stop(); });
 
-        TcpServer server(io_context, cli_args.port, 1);
+        TcpServer server(io_context, cli_args.port);
         server.start();
         io_context.run();
 

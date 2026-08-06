@@ -24,9 +24,8 @@ public:
      * @brief Создаёт сессию для принятого TCP-подключения.
      *
      * @param socket Сокет подключённого клиента.
-     * @param block_size Размер статического блока команд.
      */
-    TcpSession(boost::asio::ip::tcp::socket socket, std::size_t block_size);
+    explicit TcpSession(boost::asio::ip::tcp::socket socket);
 
     /// Завершает контекст обработки команд при уничтожении сессии.
     ~TcpSession();

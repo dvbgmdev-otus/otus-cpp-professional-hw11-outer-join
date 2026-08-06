@@ -5,8 +5,8 @@
 #include <boost/asio/buffer.hpp>
 #include <boost/system/error_code.hpp>
 
-TcpSession::TcpSession(boost::asio::ip::tcp::socket socket, std::size_t block_size)
-    : m_socket(std::move(socket)), m_handle(async::connect(block_size)) {}
+TcpSession::TcpSession(boost::asio::ip::tcp::socket socket)
+    : m_socket(std::move(socket)), m_handle(async::connect(1)) {}
 
 TcpSession::~TcpSession() { disconnect(); }
 
