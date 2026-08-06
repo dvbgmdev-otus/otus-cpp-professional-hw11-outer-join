@@ -99,6 +99,12 @@ add_test(
 )
 set_tests_properties(task_check PROPERTIES TIMEOUT 30)
 
+add_test(
+    NAME self_check
+    COMMAND ${UNIT_TEST_DIR}/self_check.sh $<TARGET_FILE:${PROJECT_NAME}>
+)
+set_tests_properties(self_check PROPERTIES TIMEOUT 30)
+
 message(STATUS "  GoogleTest added")
 
 # --- Подключение coverage-подсистемы (опционально) ---
