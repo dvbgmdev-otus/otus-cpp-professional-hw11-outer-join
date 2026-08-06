@@ -68,4 +68,15 @@ TEST_F(DatabaseTest, Truncate_WhenOtherTableHasRows_KeepsOtherTableUnchanged) {
               m_Database.insert(database::Table::B, 3, "example"));
 }
 
+// Test 2.3. После очистки таблицы B идентификатор можно добавить повторно.
+TEST_F(DatabaseTest, Truncate_WhenTableBHasRows_AllowsIdsToBeInsertedAgain) {
+    ASSERT_EQ(database::InsertResult::Inserted,
+              m_Database.insert(database::Table::B, 6, "flour"));
+
+    m_Database.truncate(database::Table::B);
+
+    EXPECT_EQ(database::InsertResult::Inserted,
+              m_Database.insert(database::Table::B, 6, "wonder"));
+}
+
 #endif  // Part 2. Очистка таблиц
