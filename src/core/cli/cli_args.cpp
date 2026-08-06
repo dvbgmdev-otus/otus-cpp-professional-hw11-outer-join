@@ -9,11 +9,11 @@
 namespace {
 
 CliArgsParseResult make_error(const std::string& error) {
-    return CliArgsParseResult{ false, 0, 0, error };
+    return CliArgsParseResult{ false, 0, error };
 }
 
-CliArgsParseResult make_success(std::uint16_t port, std::size_t block_size) {
-    return CliArgsParseResult{ true, port, block_size, {} };
+CliArgsParseResult make_success(std::uint16_t port) {
+    return CliArgsParseResult{ true, port, {} };
 }
 
 bool is_decimal_number(const char* value) {
@@ -30,8 +30,8 @@ bool is_decimal_number(const char* value) {
 }  // namespace
 
 CliArgsParseResult parse_cli_args(int argc, const char* const argv[]) {
-    if (argc != 3) {
-        return make_error("Expected two arguments: port and block size");
+    if (argc != 2) {
+        return make_error("Expected one argument: port");
     }
 
     const char* port_value = argv[1];
@@ -46,18 +46,5 @@ CliArgsParseResult parse_cli_args(int argc, const char* const argv[]) {
         return make_error("Port must be an integer from 1 to 65535");
     }
 
-    const char* block_size_value = argv[2];
-    if (!is_decimal_number(block_size_value)) {
-        return make_error("Block size must be a positive integer");
-    }
-
-    errno = 0;
-    const unsigned long long parsed_block_size = std::strtoull(block_size_value, nullptr, 10);
-    if (errno == ERANGE || parsed_block_size == 0 ||
-        parsed_block_size > std::numeric_limits<std::size_t>::max()) {
-        return make_error("Block size must be a positive integer");
-    }
-
-    return make_success(static_cast<std::uint16_t>(parsed_port),
-                        static_cast<std::size_t>(parsed_block_size));
+    return make_success(static_cast<std::uint16_t>(parsed_port));
 }

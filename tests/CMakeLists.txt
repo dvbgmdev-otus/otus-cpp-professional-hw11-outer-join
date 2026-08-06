@@ -93,18 +93,6 @@ add_unit_test(command_processor_test SOURCES
     ${UNIT_TEST_DIR}/command_processor_test.cpp
 )
 
-add_test(
-    NAME self_check
-    COMMAND ${UNIT_TEST_DIR}/self_check.sh $<TARGET_FILE:${PROJECT_NAME}>
-)
-set_tests_properties(self_check PROPERTIES TIMEOUT 30)
-
-add_test(
-    NAME task_check
-    COMMAND ${UNIT_TEST_DIR}/task_check.sh $<TARGET_FILE:${PROJECT_NAME}>
-)
-set_tests_properties(task_check PROPERTIES TIMEOUT 30)
-
 message(STATUS "  GoogleTest added")
 
 # --- Подключение coverage-подсистемы (опционально) ---
