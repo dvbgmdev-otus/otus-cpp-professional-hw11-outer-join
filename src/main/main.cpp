@@ -7,6 +7,8 @@
 #include <boost/system/error_code.hpp>
 
 #include "cli_args.h"
+#include "command_processor.h"
+#include "database.h"
 #include "tcp_server.h"
 
 namespace {
@@ -29,7 +31,9 @@ int main(int argc, const char* const argv[]) {
         signals.async_wait(
             [&io_context](const boost::system::error_code&, int) { io_context.stop(); });
 
-        TcpServer server(io_context, cli_args.port);
+        database::Database database;
+        CommandProcessor command_processor(database);
+        TcpServer server(io_context, cli_args.port, command_processor);
         server.start();
         io_context.run();
 

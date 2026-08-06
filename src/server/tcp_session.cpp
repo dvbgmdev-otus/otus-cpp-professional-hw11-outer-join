@@ -5,8 +5,11 @@
 #include <boost/asio/buffer.hpp>
 #include <boost/system/error_code.hpp>
 
-TcpSession::TcpSession(boost::asio::ip::tcp::socket socket)
-    : m_socket(std::move(socket)), m_handle(async::connect(1)) {}
+TcpSession::TcpSession(boost::asio::ip::tcp::socket socket,
+                       CommandProcessor& command_processor)
+    : m_socket(std::move(socket)),
+      m_handle(async::connect(1)),
+      m_CommandProcessor(command_processor) {}
 
 TcpSession::~TcpSession() { disconnect(); }
 

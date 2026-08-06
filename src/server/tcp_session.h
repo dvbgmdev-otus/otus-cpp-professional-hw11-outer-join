@@ -14,6 +14,8 @@
 
 #include "async.h"
 
+class CommandProcessor;
+
 /**
  * @brief Читает команды одного TCP-клиента и передаёт их библиотеке async.
  * @ingroup main_group
@@ -24,8 +26,9 @@ public:
      * @brief Создаёт сессию для принятого TCP-подключения.
      *
      * @param socket Сокет подключённого клиента.
+     * @param command_processor Общий обработчик команд сервера.
      */
-    explicit TcpSession(boost::asio::ip::tcp::socket socket);
+    TcpSession(boost::asio::ip::tcp::socket socket, CommandProcessor& command_processor);
 
     /// Завершает контекст обработки команд при уничтожении сессии.
     ~TcpSession();
@@ -54,6 +57,9 @@ private:
 
     /// Контекст клиента в библиотеке async.
     async::handle_t m_handle;
+
+    /// Общий обработчик команд сервера.
+    CommandProcessor& m_CommandProcessor;
 };
 
 #endif  // TCP_SESSION_H
