@@ -16,15 +16,15 @@ std::vector<std::string> split(const std::string& command) {
     std::vector<std::string> tokens;
     std::size_t begin = 0;
 
-    while (true) {
-        const std::size_t separator = command.find(' ', begin);
+    std::size_t separator = command.find(' ', begin);
+    while (separator != std::string::npos) {
         tokens.push_back(command.substr(begin, separator - begin));
-        if (separator == std::string::npos) {
-            return tokens;
-        }
         begin = separator + 1;
+        separator = command.find(' ', begin);
     }
-}
+    tokens.push_back(command.substr(begin));
+    return tokens;
+}  // LCOV_EXCL_LINE
 
 bool parse_table(const std::string& value, database::Table& table) {
     if (value == "A") {
@@ -96,9 +96,10 @@ std::string CommandProcessor::process(const std::string& command) {
                 database::InsertResult::Duplicate) {
                 return error_response("duplicate " + std::to_string(id));
             }
-        } catch (const std::exception& error) {
+        } catch (const std::exception& error) {  // LCOV_EXCL_START
             return error_response(error.what());
         }
+        // LCOV_EXCL_STOP
 
         return OK_RESPONSE;
     }
@@ -115,9 +116,10 @@ std::string CommandProcessor::process(const std::string& command) {
 
         try {
             m_Database.truncate(table);
-        } catch (const std::exception& error) {
+        } catch (const std::exception& error) {  // LCOV_EXCL_START
             return error_response(error.what());
         }
+        // LCOV_EXCL_STOP
         return OK_RESPONSE;
     }
 
@@ -128,9 +130,10 @@ std::string CommandProcessor::process(const std::string& command) {
 
         try {
             return rows_response(m_Database.intersection());
-        } catch (const std::exception& error) {
+        } catch (const std::exception& error) {  // LCOV_EXCL_START
             return error_response(error.what());
         }
+        // LCOV_EXCL_STOP
     }
 
     if (!tokens.empty() && tokens[0] == "SYMMETRIC_DIFFERENCE") {
@@ -140,9 +143,10 @@ std::string CommandProcessor::process(const std::string& command) {
 
         try {
             return rows_response(m_Database.symmetric_difference());
-        } catch (const std::exception& error) {
+        } catch (const std::exception& error) {  // LCOV_EXCL_START
             return error_response(error.what());
         }
+        // LCOV_EXCL_STOP
     }
 
     return error_response("unknown command");

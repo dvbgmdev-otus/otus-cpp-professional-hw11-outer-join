@@ -32,18 +32,16 @@ TEST_F(CommandProcessorTest, Insert_WhenTableBAndIdAreValid_ReturnsOk) {
 // Test 1.3. Повторный идентификатор возвращает предусмотренную протоколом ошибку.
 TEST_F(CommandProcessorTest, Insert_WhenIdAlreadyExists_ReturnsDuplicateError) {
     ASSERT_EQ("OK\n", processor.process("INSERT A 1 sweater"));
-
     EXPECT_EQ("ERR duplicate 1\n", processor.process("INSERT A 1 understand"));
 }
 
-#endif  // Part 1. Команда INSERT
+#endif
 
 #if (1)  // Part 2. Команда TRUNCATE
 
 // Test 2.1. Очистка таблицы A позволяет повторно добавить идентификатор.
 TEST_F(CommandProcessorTest, Truncate_WhenTableAHasRows_ClearsTable) {
     ASSERT_EQ("OK\n", processor.process("INSERT A 1 sweater"));
-
     EXPECT_EQ("OK\n", processor.process("TRUNCATE A"));
     EXPECT_EQ("OK\n", processor.process("INSERT A 1 understand"));
 }
@@ -51,12 +49,11 @@ TEST_F(CommandProcessorTest, Truncate_WhenTableAHasRows_ClearsTable) {
 // Test 2.2. Очистка таблицы B позволяет повторно добавить идентификатор.
 TEST_F(CommandProcessorTest, Truncate_WhenTableBHasRows_ClearsTable) {
     ASSERT_EQ("OK\n", processor.process("INSERT B 6 flour"));
-
     EXPECT_EQ("OK\n", processor.process("TRUNCATE B"));
     EXPECT_EQ("OK\n", processor.process("INSERT B 6 wonder"));
 }
 
-#endif  // Part 2. Команда TRUNCATE
+#endif
 
 #if (1)  // Part 3. Команды выборки
 
@@ -73,7 +70,6 @@ TEST_F(CommandProcessorTest, Intersection_WhenTablesOverlap_ReturnsRowsAndOk) {
     ASSERT_EQ("OK\n", processor.process("INSERT B 6 flour"));
     ASSERT_EQ("OK\n", processor.process("INSERT B 4 example"));
     ASSERT_EQ("OK\n", processor.process("INSERT B 3 proposal"));
-
     EXPECT_EQ("3,violation,proposal\n4,quality,example\nOK\n",
               processor.process("INTERSECTION"));
 }
@@ -89,12 +85,11 @@ TEST_F(CommandProcessorTest, SymmetricDifference_WhenTablesOverlap_ReturnsRowsAn
     ASSERT_EQ("OK\n", processor.process("INSERT A 3 violation"));
     ASSERT_EQ("OK\n", processor.process("INSERT A 0 lean"));
     ASSERT_EQ("OK\n", processor.process("INSERT B 3 proposal"));
-
     EXPECT_EQ("0,lean,\n6,,flour\nOK\n",
               processor.process("SYMMETRIC_DIFFERENCE"));
 }
 
-#endif  // Part 3. Команды выборки
+#endif
 
 #if (1)  // Part 4. Неизвестные команды и таблицы
 
@@ -118,7 +113,7 @@ TEST_F(CommandProcessorTest, Truncate_WhenTableIsUnknown_ReturnsUnknownTableErro
     EXPECT_EQ("ERR unknown table\n", processor.process("TRUNCATE C"));
 }
 
-#endif  // Part 4. Неизвестные команды и таблицы
+#endif
 
 #if (1)  // Part 5. Неверное количество аргументов и разделители
 
@@ -152,7 +147,7 @@ TEST_F(CommandProcessorTest, Process_WhenSpacesAreNotStrict_ReturnsError) {
     EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT A 1 sweater "));
 }
 
-#endif  // Part 5. Неверное количество аргументов и разделители
+#endif
 
 #if (1)  // Part 6. Неверный идентификатор
 
@@ -177,11 +172,15 @@ TEST_F(CommandProcessorTest, Insert_WhenIdExceedsParserRange_ReturnsInvalidIdErr
               processor.process("INSERT A 999999999999999999999999 sweater"));
 }
 
-// Test 6.5. Ошибочная команда не изменяет содержимое таблицы.
+// Test 6.5. Пустой идентификатор возвращает ошибку.
+TEST_F(CommandProcessorTest, Insert_WhenIdIsEmpty_ReturnsInvalidIdError) {
+    EXPECT_EQ("ERR invalid id\n", processor.process("INSERT A  sweater"));
+}
+
+// Test 6.6. Ошибочная команда не изменяет содержимое таблицы.
 TEST_F(CommandProcessorTest, Insert_WhenCommandIsInvalid_KeepsDatabaseUnchanged) {
     ASSERT_EQ("ERR invalid id\n", processor.process("INSERT A 1x sweater"));
-
     EXPECT_EQ("OK\n", processor.process("INSERT A 1 sweater"));
 }
 
-#endif  // Part 6. Неверный идентификатор
+#endif
