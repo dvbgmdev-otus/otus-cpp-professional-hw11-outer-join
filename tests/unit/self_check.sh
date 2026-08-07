@@ -73,7 +73,7 @@ send_commands() {
     printf '%s' "$1" | nc -N -w 2 localhost "$PORT"
 }
 
-#if (1)  # Part 1. Границы TCP-чтения
+# Part 1. Границы TCP-чтения
 
 # Test 1.1. Команда, разделённая между двумя записями, обрабатывается целиком.
 check_fragmented_command() {
@@ -96,9 +96,7 @@ check_command_batch() {
     check_equal "command batch" "$expected" "$(send_commands "$commands")"
 }
 
-#endif  # Part 1. Границы TCP-чтения
-
-#if (1)  # Part 2. Общее состояние сервера
+# Part 2. Общее состояние сервера
 
 # Test 2.1. Данные из одного TCP-подключения доступны в другом.
 check_shared_database() {
@@ -108,9 +106,7 @@ check_shared_database() {
         "$(send_commands $'SYMMETRIC_DIFFERENCE\n')"
 }
 
-#endif  # Part 2. Общее состояние сервера
-
-#if (1)  # Part 3. Ошибки и очистка
+# Part 3. Ошибки и очистка
 
 # Test 3.1. Ошибки команд не мешают обработке следующих команд.
 check_recovery_after_errors() {
@@ -127,8 +123,6 @@ check_independent_truncate() {
 
     check_equal "independent TRUNCATE" "$expected" "$(send_commands "$commands")"
 }
-
-#endif  # Part 3. Ошибки и очистка
 
 main() {
     if [[ ! -x "$BINARY" ]]; then

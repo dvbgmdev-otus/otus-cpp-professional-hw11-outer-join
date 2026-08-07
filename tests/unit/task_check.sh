@@ -73,7 +73,7 @@ send_commands() {
     printf '%s' "$1" | nc -N -w 2 localhost "$PORT"
 }
 
-#if (1)  # Part 1. Сценарий TASK.md
+# Part 1. Сценарий TASK.md
 
 # Test 1.1. Сервер воспроизводит ввод и ожидаемый вывод из TASK.md.
 run_task_scenario() {
@@ -83,8 +83,6 @@ run_task_scenario() {
     check_equal "TASK.md scenario" "$expected" "$(send_commands "$commands")"
     log_ok "Passed: TASK.md scenario"
 }
-
-#endif  # Part 1. Сценарий TASK.md
 
 main() {
     if [[ ! -x "$BINARY" ]]; then
