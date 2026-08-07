@@ -124,12 +124,41 @@ check_independent_truncate() {
     check_equal "independent TRUNCATE" "$expected" "$(send_commands "$commands")"
 }
 
+# Part 4. Ошибки запуска
+
+# Test 4.1. Запуск без порта завершается с сообщением об ошибке.
+check_missing_port() {
+    local actual
+
+    if actual="$("$BINARY" 2>&1)"; then
+        fail "Server started without port argument"
+    fi
+
+    check_equal "missing port" "Expected one argument: port" "$actual"
+}
+
+# Test 4.2. Запуск на занятом порту завершается с сообщением об ошибке.
+check_port_conflict() {
+    local actual
+
+    if actual="$("$BINARY" "$PORT" 2>&1)"; then
+        fail "Second server started on occupied port $PORT"
+    fi
+    if [[ -z "$actual" ]]; then
+        fail "Port conflict did not produce an error message"
+    fi
+
+    log_ok "Passed: occupied port"
+}
+
 main() {
     if [[ ! -x "$BINARY" ]]; then
         fail "Binary not found or not executable: $BINARY"
     fi
 
+    check_missing_port
     start_server
+    check_port_conflict
     check_fragmented_command
     check_command_batch
     check_shared_database
