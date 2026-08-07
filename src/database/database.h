@@ -34,7 +34,7 @@ enum class InsertResult {
  * @ingroup database_group
  */
 struct JoinedRow {
-    int id;              ///< Общий идентификатор строки.
+    int id{ 0 };         ///< Общий идентификатор строки.
     std::string a_name;  ///< Имя из таблицы A либо пустая строка.
     std::string b_name;  ///< Имя из таблицы B либо пустая строка.
 };
