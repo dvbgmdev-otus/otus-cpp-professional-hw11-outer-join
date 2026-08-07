@@ -16,10 +16,17 @@ class Database;
  */
 class CommandProcessor {
 public:
-    /// Создаёт обработчик команд для указанной базы данных.
+    /**
+     * @brief Создаёт обработчик команд для указанной базы данных.
+     * @param database Общая база данных сервера.
+     */
     explicit CommandProcessor(Database& database);
 
-    /// Выполняет одну команду без завершающего символа перевода строки.
+    /**
+     * @brief Выполняет одну команду без завершающего символа перевода строки.
+     * @param command Текст команды протокола.
+     * @return Ответ протокола, завершающийся символом перевода строки.
+     */
     std::string process(const std::string& command);
 
 private:
