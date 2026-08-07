@@ -1,6 +1,6 @@
 # ==========================================
 # @file src/main/CMakeLists.txt
-# Build bulk executable
+# Build join_server executable
 # ==========================================
 
 add_executable(${PROJECT_NAME}
