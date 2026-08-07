@@ -26,13 +26,13 @@ std::vector<std::string> split(const std::string& command) {
     return tokens;
 }  // LCOV_EXCL_LINE
 
-bool parse_table(const std::string& value, database::Table& table) {
+bool parse_table(const std::string& value, Table& table) {
     if (value == "A") {
-        table = database::Table::A;
+        table = Table::A;
         return true;
     }
     if (value == "B") {
-        table = database::Table::B;
+        table = Table::B;
         return true;
     }
     return false;
@@ -61,9 +61,9 @@ bool parse_id(const std::string& value, int& id) {
 
 std::string error_response(const std::string& message) { return "ERR " + message + '\n'; }
 
-std::string rows_response(const std::vector<database::JoinedRow>& rows) {
+std::string rows_response(const std::vector<JoinedRow>& rows) {
     std::string response;
-    for (const database::JoinedRow& row : rows) {
+    for (const JoinedRow& row : rows) {
         response += std::to_string(row.id) + ',' + row.a_name + ',' + row.b_name + '\n';
     }
     return response + OK_RESPONSE;
@@ -71,7 +71,7 @@ std::string rows_response(const std::vector<database::JoinedRow>& rows) {
 
 }  // namespace
 
-CommandProcessor::CommandProcessor(database::Database& database) : m_Database(database) {}
+CommandProcessor::CommandProcessor(Database& database) : m_Database(database) {}
 
 std::string CommandProcessor::process(const std::string& command) {
     const std::vector<std::string> tokens = split(command);
@@ -81,7 +81,7 @@ std::string CommandProcessor::process(const std::string& command) {
             return error_response("invalid arguments");
         }
 
-        database::Table table = database::Table::A;
+        Table table = Table::A;
         if (!parse_table(tokens[1], table)) {
             return error_response("unknown table");
         }
@@ -93,7 +93,7 @@ std::string CommandProcessor::process(const std::string& command) {
 
         try {
             if (m_Database.insert(table, id, tokens[3]) ==
-                database::InsertResult::Duplicate) {
+                InsertResult::Duplicate) {
                 return error_response("duplicate " + std::to_string(id));
             }
         } catch (const std::exception& error) {  // LCOV_EXCL_START
@@ -109,7 +109,7 @@ std::string CommandProcessor::process(const std::string& command) {
             return error_response("invalid arguments");
         }
 
-        database::Table table = database::Table::A;
+        Table table = Table::A;
         if (!parse_table(tokens[1], table)) {
             return error_response("unknown table");
         }

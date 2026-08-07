@@ -13,7 +13,7 @@ class CommandProcessorTest : public ::testing::Test {
 protected:
     CommandProcessorTest() : processor(test_database) {}
 
-    database::Database test_database;
+    Database test_database;
     CommandProcessor processor;
 };
 
@@ -36,7 +36,6 @@ TEST_F(CommandProcessorTest, Insert_WhenIdAlreadyExists_ReturnsDuplicateError) {
 }
 
 #endif
-
 #if (1)  // Part 2. Команда TRUNCATE
 
 // Test 2.1. Очистка таблицы A позволяет повторно добавить идентификатор.

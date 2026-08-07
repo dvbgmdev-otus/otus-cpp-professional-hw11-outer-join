@@ -11,15 +11,22 @@
 
 struct sqlite3;
 
-namespace database {
-
-/// Таблица данных, доступная через протокол join_server.
+/**
+ * @brief Таблица данных, доступная через протокол join_server.
+ * @ingroup database_group
+ */
 enum class Table { A, B };
 
-/// Результат добавления записи в таблицу.
+/**
+ * @brief Результат добавления записи в таблицу.
+ * @ingroup database_group
+ */
 enum class InsertResult { Inserted, Duplicate };
 
-/// Строка результата объединения таблиц A и B.
+/**
+ * @brief Строка результата объединения таблиц A и B.
+ * @ingroup database_group
+ */
 struct JoinedRow {
     int id;
     std::string a_name;
@@ -28,6 +35,7 @@ struct JoinedRow {
 
 /**
  * @brief Управляет in-memory базой SQLite с таблицами A и B.
+ * @ingroup database_group
  */
 class Database {
 public:
@@ -65,7 +73,5 @@ private:
     /// Соединение с SQLite.
     sqlite3* m_Database = nullptr;
 };
-
-}  // namespace database
 
 #endif  // DATABASE_H

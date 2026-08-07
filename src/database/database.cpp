@@ -14,22 +14,22 @@ struct StatementDeleter {
 
 using Statement = std::unique_ptr<sqlite3_stmt, StatementDeleter>;
 
-const char* insert_query(database::Table table) {
+const char* insert_query(Table table) {
     switch (table) {
-        case database::Table::A:
+        case Table::A:
             return "INSERT INTO A(id, name) VALUES(?, ?)";
-        case database::Table::B:
+        case Table::B:
             return "INSERT INTO B(id, name) VALUES(?, ?)";
     }
 
     throw std::invalid_argument("Unknown table");
 }
 
-const char* truncate_query(database::Table table) {
+const char* truncate_query(Table table) {
     switch (table) {
-        case database::Table::A:
+        case Table::A:
             return "DELETE FROM A";
-        case database::Table::B:
+        case Table::B:
             return "DELETE FROM B";
     }
 
@@ -48,8 +48,6 @@ std::string column_text(sqlite3_stmt* statement, int column) {
 }
 
 }  // namespace
-
-namespace database {
 
 Database::Database() {
     const int open_result = sqlite3_open(":memory:", &m_Database);
@@ -160,5 +158,3 @@ std::vector<JoinedRow> Database::select_joined_rows(const std::string& query) {
 
     return rows;
 }
-
-}  // namespace database
