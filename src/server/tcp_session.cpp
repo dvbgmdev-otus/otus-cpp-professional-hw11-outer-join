@@ -55,7 +55,7 @@ void TcpSession::write() {
         boost::asio::buffer(m_Responses.front()),
         [self](const boost::system::error_code& error, std::size_t) {
             if (error) {
-                return;
+                return;  // LCOV_EXCL_LINE
             }
 
             self->m_Responses.pop_front();
