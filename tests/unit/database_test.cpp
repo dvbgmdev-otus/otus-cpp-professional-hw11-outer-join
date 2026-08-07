@@ -7,6 +7,8 @@
 
 #include <gtest/gtest.h>
 
+#include <stdexcept>
+
 class DatabaseTest : public ::testing::Test {
 protected:
     database::Database test_database;
@@ -24,7 +26,6 @@ TEST_F(DatabaseTest, Insert_WhenIdIsNew_ReturnsInserted) {
 TEST_F(DatabaseTest, Insert_WhenIdAlreadyExistsInTable_ReturnsDuplicate) {
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::A, 1, "sweater"));
-
     EXPECT_EQ(database::InsertResult::Duplicate,
               test_database.insert(database::Table::A, 1, "understand"));
 }
@@ -33,12 +34,11 @@ TEST_F(DatabaseTest, Insert_WhenIdAlreadyExistsInTable_ReturnsDuplicate) {
 TEST_F(DatabaseTest, Insert_WhenIdExistsInOtherTable_ReturnsInserted) {
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::A, 3, "violation"));
-
     EXPECT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::B, 3, "proposal"));
 }
 
-#endif  // Part 1. Добавление записей
+#endif
 
 #if (1)  // Part 2. Очистка таблиц
 
@@ -46,9 +46,7 @@ TEST_F(DatabaseTest, Insert_WhenIdExistsInOtherTable_ReturnsInserted) {
 TEST_F(DatabaseTest, Truncate_WhenTableHasRows_AllowsIdsToBeInsertedAgain) {
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::A, 1, "sweater"));
-
     test_database.truncate(database::Table::A);
-
     EXPECT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::A, 1, "understand"));
 }
@@ -59,9 +57,7 @@ TEST_F(DatabaseTest, Truncate_WhenOtherTableHasRows_KeepsOtherTableUnchanged) {
               test_database.insert(database::Table::A, 3, "violation"));
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::B, 3, "proposal"));
-
     test_database.truncate(database::Table::A);
-
     EXPECT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::A, 3, "quality"));
     EXPECT_EQ(database::InsertResult::Duplicate,
@@ -72,14 +68,12 @@ TEST_F(DatabaseTest, Truncate_WhenOtherTableHasRows_KeepsOtherTableUnchanged) {
 TEST_F(DatabaseTest, Truncate_WhenTableBHasRows_AllowsIdsToBeInsertedAgain) {
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::B, 6, "flour"));
-
     test_database.truncate(database::Table::B);
-
     EXPECT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::B, 6, "wonder"));
 }
 
-#endif  // Part 2. Очистка таблиц
+#endif
 
 #if (1)  // Part 3. Пересечение таблиц
 
@@ -102,9 +96,7 @@ TEST_F(DatabaseTest, Intersection_WhenTablesOverlap_ReturnsCommonRows) {
               test_database.insert(database::Table::B, 4, "example"));
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::B, 6, "flour"));
-
     const std::vector<database::JoinedRow> rows = test_database.intersection();
-
     ASSERT_EQ(2U, rows.size());
     EXPECT_EQ(3, rows[0].id);
     EXPECT_EQ("violation", rows[0].a_name);
@@ -122,16 +114,14 @@ TEST_F(DatabaseTest, Intersection_WhenRowsInsertedOutOfOrder_ReturnsRowsOrderedB
         ASSERT_EQ(database::InsertResult::Inserted,
                   test_database.insert(database::Table::B, id, "B"));
     }
-
     const std::vector<database::JoinedRow> rows = test_database.intersection();
-
     ASSERT_EQ(3U, rows.size());
     EXPECT_EQ(3, rows[0].id);
     EXPECT_EQ(4, rows[1].id);
     EXPECT_EQ(5, rows[2].id);
 }
 
-#endif  // Part 3. Пересечение таблиц
+#endif
 
 #if (1)  // Part 4. Симметрическая разность таблиц
 
@@ -150,9 +140,7 @@ TEST_F(DatabaseTest, SymmetricDifference_WhenTablesOverlap_ReturnsExclusiveRows)
               test_database.insert(database::Table::B, 3, "proposal"));
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::B, 6, "flour"));
-
     const std::vector<database::JoinedRow> rows = test_database.symmetric_difference();
-
     ASSERT_EQ(2U, rows.size());
     EXPECT_EQ(0, rows[0].id);
     EXPECT_EQ("lean", rows[0].a_name);
@@ -172,9 +160,7 @@ TEST_F(DatabaseTest, SymmetricDifference_WhenRowsInsertedOutOfOrder_ReturnsRowsO
               test_database.insert(database::Table::B, 7, "wonder"));
     ASSERT_EQ(database::InsertResult::Inserted,
               test_database.insert(database::Table::A, 1, "sweater"));
-
     const std::vector<database::JoinedRow> rows = test_database.symmetric_difference();
-
     ASSERT_EQ(4U, rows.size());
     EXPECT_EQ(1, rows[0].id);
     EXPECT_EQ(2, rows[1].id);
@@ -182,4 +168,20 @@ TEST_F(DatabaseTest, SymmetricDifference_WhenRowsInsertedOutOfOrder_ReturnsRowsO
     EXPECT_EQ(8, rows[3].id);
 }
 
-#endif  // Part 4. Симметрическая разность таблиц
+#endif
+
+#if (1)  // Part 5. Неизвестная таблица
+
+// Test 5.1. Добавление в неизвестную таблицу завершается ошибкой.
+TEST_F(DatabaseTest, Insert_WhenTableIsUnknown_ThrowsInvalidArgument) {
+    const auto unknown_table = static_cast<database::Table>(-1);
+    EXPECT_THROW(test_database.insert(unknown_table, 1, "name"), std::invalid_argument);
+}
+
+// Test 5.2. Очистка неизвестной таблицы завершается ошибкой.
+TEST_F(DatabaseTest, Truncate_WhenTableIsUnknown_ThrowsInvalidArgument) {
+    const auto unknown_table = static_cast<database::Table>(-1);
+    EXPECT_THROW(test_database.truncate(unknown_table), std::invalid_argument);
+}
+
+#endif

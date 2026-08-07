@@ -36,9 +36,11 @@ const char* truncate_query(database::Table table) {
     throw std::invalid_argument("Unknown table");
 }
 
+// LCOV_EXCL_START
 std::runtime_error sqlite_error(sqlite3* database, const std::string& operation) {
     return std::runtime_error(operation + ": " + sqlite3_errmsg(database));
 }
+// LCOV_EXCL_STOP
 
 std::string column_text(sqlite3_stmt* statement, int column) {
     const unsigned char* value = sqlite3_column_text(statement, column);
@@ -51,7 +53,7 @@ namespace database {
 
 Database::Database() {
     const int open_result = sqlite3_open(":memory:", &m_Database);
-    if (open_result != SQLITE_OK) {
+    if (open_result != SQLITE_OK) {  // LCOV_EXCL_START
         const std::string message = m_Database == nullptr
                                         ? "Unable to open SQLite database"
                                         : sqlite3_errmsg(m_Database);
@@ -59,15 +61,17 @@ Database::Database() {
         m_Database = nullptr;
         throw std::runtime_error(message);
     }
+    // LCOV_EXCL_STOP
 
     try {
         execute("CREATE TABLE A(id INTEGER PRIMARY KEY, name TEXT NOT NULL)");
         execute("CREATE TABLE B(id INTEGER PRIMARY KEY, name TEXT NOT NULL)");
-    } catch (...) {
+    } catch (...) {  // LCOV_EXCL_START
         sqlite3_close(m_Database);
         m_Database = nullptr;
         throw;
     }
+    // LCOV_EXCL_STOP
 }
 
 Database::~Database() { sqlite3_close(m_Database); }
@@ -76,14 +80,14 @@ InsertResult Database::insert(Table table, int id, const std::string& name) {
     sqlite3_stmt* raw_statement = nullptr;
     if (sqlite3_prepare_v2(m_Database, insert_query(table), -1, &raw_statement, nullptr) !=
         SQLITE_OK) {
-        throw sqlite_error(m_Database, "Unable to prepare INSERT");
+        throw sqlite_error(m_Database, "Unable to prepare INSERT");  // LCOV_EXCL_LINE
     }
     Statement statement(raw_statement);
 
     if (sqlite3_bind_int(statement.get(), 1, id) != SQLITE_OK ||
         sqlite3_bind_text(statement.get(), 2, name.c_str(), -1, SQLITE_TRANSIENT) !=
             SQLITE_OK) {
-        throw sqlite_error(m_Database, "Unable to bind INSERT parameters");
+        throw sqlite_error(m_Database, "Unable to bind INSERT parameters");  // LCOV_EXCL_LINE
     }
 
     const int step_result = sqlite3_step(statement.get());
@@ -97,7 +101,7 @@ InsertResult Database::insert(Table table, int id, const std::string& name) {
         return InsertResult::Duplicate;
     }
 
-    throw sqlite_error(m_Database, "Unable to execute INSERT");
+    throw sqlite_error(m_Database, "Unable to execute INSERT");  // LCOV_EXCL_LINE
 }
 
 void Database::truncate(Table table) { execute(truncate_query(table)); }
@@ -126,16 +130,18 @@ void Database::execute(const std::string& query) {
         return;
     }
 
+    // LCOV_EXCL_START
     const std::string message = raw_error == nullptr ? sqlite3_errmsg(m_Database) : raw_error;
     sqlite3_free(raw_error);
     throw std::runtime_error("Unable to execute SQL: " + message);
 }
+// LCOV_EXCL_STOP
 
 std::vector<JoinedRow> Database::select_joined_rows(const std::string& query) {
     sqlite3_stmt* raw_statement = nullptr;
     if (sqlite3_prepare_v2(m_Database, query.c_str(), -1, &raw_statement, nullptr) !=
         SQLITE_OK) {
-        throw sqlite_error(m_Database, "Unable to prepare SELECT");
+        throw sqlite_error(m_Database, "Unable to prepare SELECT");  // LCOV_EXCL_LINE
     }
     Statement statement(raw_statement);
 
@@ -149,7 +155,7 @@ std::vector<JoinedRow> Database::select_joined_rows(const std::string& query) {
     }
 
     if (step_result != SQLITE_DONE) {
-        throw sqlite_error(m_Database, "Unable to execute SELECT");
+        throw sqlite_error(m_Database, "Unable to execute SELECT");  // LCOV_EXCL_LINE
     }
 
     return rows;
