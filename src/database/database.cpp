@@ -1,10 +1,10 @@
 #include "database.h"
 
+#include <sqlite3.h>
+
 #include <memory>
 #include <stdexcept>
 #include <string>
-
-#include <sqlite3.h>
 
 namespace {
 
@@ -13,6 +13,21 @@ struct StatementDeleter {
 };
 
 using Statement = std::unique_ptr<sqlite3_stmt, StatementDeleter>;
+
+const char* INTERSECTION_QUERY =
+    "SELECT A.id, A.name, B.name "
+    "FROM A INNER JOIN B ON A.id = B.id "
+    "ORDER BY A.id";
+
+const char* SYMMETRIC_DIFFERENCE_QUERY =
+    "SELECT A.id AS id, A.name AS a_name, NULL AS b_name "
+    "FROM A LEFT JOIN B ON A.id = B.id "
+    "WHERE B.id IS NULL "
+    "UNION ALL "
+    "SELECT B.id AS id, NULL AS a_name, B.name AS b_name "
+    "FROM B LEFT JOIN A ON B.id = A.id "
+    "WHERE A.id IS NULL "
+    "ORDER BY id";
 
 const char* insert_query(Table table) {
     switch (table) {
@@ -52,9 +67,8 @@ std::string column_text(sqlite3_stmt* statement, int column) {
 Database::Database() {
     const int open_result = sqlite3_open(":memory:", &m_Database);
     if (open_result != SQLITE_OK) {  // LCOV_EXCL_START
-        const std::string message = m_Database == nullptr
-                                        ? "Unable to open SQLite database"
-                                        : sqlite3_errmsg(m_Database);
+        const std::string message =
+            m_Database == nullptr ? "Unable to open SQLite database" : sqlite3_errmsg(m_Database);
         sqlite3_close(m_Database);
         m_Database = nullptr;
         throw std::runtime_error(message);
@@ -64,15 +78,33 @@ Database::Database() {
     try {
         execute("CREATE TABLE A(id INTEGER PRIMARY KEY, name TEXT NOT NULL)");
         execute("CREATE TABLE B(id INTEGER PRIMARY KEY, name TEXT NOT NULL)");
+        if (sqlite3_prepare_v2(
+                m_Database, INTERSECTION_QUERY, -1, &m_IntersectionStatement, nullptr) !=
+                SQLITE_OK ||
+            sqlite3_prepare_v2(m_Database,
+                               SYMMETRIC_DIFFERENCE_QUERY,
+                               -1,
+                               &m_SymmetricDifferenceStatement,
+                               nullptr) != SQLITE_OK) {
+            throw sqlite_error(m_Database, "Unable to prepare SELECT");  // LCOV_EXCL_LINE
+        }
     } catch (...) {  // LCOV_EXCL_START
+        sqlite3_finalize(m_IntersectionStatement);
+        sqlite3_finalize(m_SymmetricDifferenceStatement);
         sqlite3_close(m_Database);
+        m_IntersectionStatement = nullptr;
+        m_SymmetricDifferenceStatement = nullptr;
         m_Database = nullptr;
         throw;
     }
     // LCOV_EXCL_STOP
 }
 
-Database::~Database() { sqlite3_close(m_Database); }
+Database::~Database() {
+    sqlite3_finalize(m_IntersectionStatement);
+    sqlite3_finalize(m_SymmetricDifferenceStatement);
+    sqlite3_close(m_Database);
+}
 
 InsertResult Database::insert(Table table, int id, const std::string& name) {
     sqlite3_stmt* raw_statement = nullptr;
@@ -83,8 +115,7 @@ InsertResult Database::insert(Table table, int id, const std::string& name) {
     Statement statement(raw_statement);
 
     if (sqlite3_bind_int(statement.get(), 1, id) != SQLITE_OK ||
-        sqlite3_bind_text(statement.get(), 2, name.c_str(), -1, SQLITE_TRANSIENT) !=
-            SQLITE_OK) {
+        sqlite3_bind_text(statement.get(), 2, name.c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
         throw sqlite_error(m_Database, "Unable to bind INSERT parameters");  // LCOV_EXCL_LINE
     }
 
@@ -105,20 +136,11 @@ InsertResult Database::insert(Table table, int id, const std::string& name) {
 void Database::truncate(Table table) { execute(truncate_query(table)); }
 
 std::vector<JoinedRow> Database::intersection() {
-    return select_joined_rows("SELECT A.id, A.name, B.name "
-                              "FROM A INNER JOIN B ON A.id = B.id "
-                              "ORDER BY A.id");
+    return select_joined_rows(m_IntersectionStatement);
 }
 
 std::vector<JoinedRow> Database::symmetric_difference() {
-    return select_joined_rows("SELECT A.id AS id, A.name AS a_name, NULL AS b_name "
-                              "FROM A LEFT JOIN B ON A.id = B.id "
-                              "WHERE B.id IS NULL "
-                              "UNION ALL "
-                              "SELECT B.id AS id, NULL AS a_name, B.name AS b_name "
-                              "FROM B LEFT JOIN A ON B.id = A.id "
-                              "WHERE A.id IS NULL "
-                              "ORDER BY id");
+    return select_joined_rows(m_SymmetricDifferenceStatement);
 }
 
 void Database::execute(const std::string& query) {
@@ -135,26 +157,21 @@ void Database::execute(const std::string& query) {
 }
 // LCOV_EXCL_STOP
 
-std::vector<JoinedRow> Database::select_joined_rows(const std::string& query) {
-    sqlite3_stmt* raw_statement = nullptr;
-    if (sqlite3_prepare_v2(m_Database, query.c_str(), -1, &raw_statement, nullptr) !=
-        SQLITE_OK) {
-        throw sqlite_error(m_Database, "Unable to prepare SELECT");  // LCOV_EXCL_LINE
-    }
-    Statement statement(raw_statement);
-
+std::vector<JoinedRow> Database::select_joined_rows(sqlite3_stmt* statement) {
     std::vector<JoinedRow> rows;
-    int step_result = sqlite3_step(statement.get());
+    int step_result = sqlite3_step(statement);
     while (step_result == SQLITE_ROW) {
-        rows.push_back(JoinedRow{ sqlite3_column_int(statement.get(), 0),
-                                  column_text(statement.get(), 1),
-                                  column_text(statement.get(), 2) });
-        step_result = sqlite3_step(statement.get());
+        rows.push_back(JoinedRow{ sqlite3_column_int(statement, 0),
+                                  column_text(statement, 1),
+                                  column_text(statement, 2) });
+        step_result = sqlite3_step(statement);
     }
 
     if (step_result != SQLITE_DONE) {
+        sqlite3_reset(statement);  // LCOV_EXCL_LINE
         throw sqlite_error(m_Database, "Unable to execute SELECT");  // LCOV_EXCL_LINE
     }
 
+    sqlite3_reset(statement);
     return rows;
-}
+}  // LCOV_EXCL_LINE
