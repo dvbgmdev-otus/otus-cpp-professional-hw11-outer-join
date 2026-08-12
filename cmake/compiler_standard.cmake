@@ -30,7 +30,7 @@ else()
     # Modern CMake
     message(STATUS "  Modern CMake detected (${CMAKE_VERSION})")
     message(STATUS "  Using CMake CXX_STANDARD mechanism")
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
     set(PROJECT_CXX_STANDARD_INFO "C++${CMAKE_CXX_STANDARD} (CMake native)")
