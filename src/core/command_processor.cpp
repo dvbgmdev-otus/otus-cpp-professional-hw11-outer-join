@@ -28,7 +28,7 @@ std::vector<std::string_view> split(
     return tokens;
 }  // LCOV_EXCL_LINE
 
-bool parse_table(const std::string& value, Table& table) {
+bool parse_table(std::string_view value, Table& table) {
     if (value == "A") {
         table = Table::A;
         return true;
@@ -85,7 +85,7 @@ std::string CommandProcessor::process(const std::string& command) {
         }
 
         Table table = Table::A;
-        if (!parse_table(std::string(tokens[1]), table)) {
+        if (!parse_table(tokens[1], table)) {
             return error_response("unknown table");
         }
 
@@ -112,7 +112,7 @@ std::string CommandProcessor::process(const std::string& command) {
         }
 
         Table table = Table::A;
-        if (!parse_table(std::string(tokens[1]), table)) {
+        if (!parse_table(tokens[1], table)) {
             return error_response("unknown table");
         }
 
