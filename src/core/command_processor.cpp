@@ -12,12 +12,13 @@ namespace {
 
 const std::string OK_RESPONSE = "OK\n";
 
-std::vector<std::string> split(const std::string& command) {
+std::vector<std::string> split(const std::string& command,
+                               std::size_t max_tokens = std::numeric_limits<std::size_t>::max()) {
     std::vector<std::string> tokens;
     std::size_t begin = 0;
 
     std::size_t separator = command.find(' ', begin);
-    while (separator != std::string::npos) {
+    while (separator != std::string::npos && tokens.size() + 1 < max_tokens) {
         tokens.push_back(command.substr(begin, separator - begin));
         begin = separator + 1;
         separator = command.find(' ', begin);
@@ -74,10 +75,11 @@ std::string rows_response(const std::vector<JoinedRow>& rows) {
 CommandProcessor::CommandProcessor(Database& database) : m_Database(database) {}
 
 std::string CommandProcessor::process(const std::string& command) {
-    const std::vector<std::string> tokens = split(command);
+    std::vector<std::string> tokens = split(command);
 
     if (!tokens.empty() && tokens[0] == "INSERT") {
-        if (tokens.size() != 4 || tokens[3].empty()) {
+        tokens = split(command, 4);
+        if (tokens.size() != 4 || tokens[1].empty() || tokens[3].empty()) {
             return error_response("invalid arguments");
         }
 
@@ -92,8 +94,7 @@ std::string CommandProcessor::process(const std::string& command) {
         }
 
         try {
-            if (m_Database.insert(table, id, tokens[3]) ==
-                InsertResult::Duplicate) {
+            if (m_Database.insert(table, id, tokens[3]) == InsertResult::Duplicate) {
                 return error_response("duplicate " + std::to_string(id));
             }
         } catch (const std::exception& error) {  // LCOV_EXCL_START

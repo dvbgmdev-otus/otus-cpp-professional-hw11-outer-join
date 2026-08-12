@@ -35,6 +35,13 @@ TEST_F(CommandProcessorTest, Insert_WhenIdAlreadyExists_ReturnsDuplicateError) {
     EXPECT_EQ("ERR duplicate 1\n", processor.process("INSERT A 1 understand"));
 }
 
+// Test 1.4. Имя с пробелами целиком сохраняется в таблице.
+TEST_F(CommandProcessorTest, Insert_WhenNameContainsSpaces_StoresEntireName) {
+    ASSERT_EQ("OK\n", processor.process("INSERT A 1 John Doe"));
+    ASSERT_EQ("OK\n", processor.process("INSERT B 1 Jane Doe"));
+    EXPECT_EQ("1,John Doe,Jane Doe\nOK\n", processor.process("INTERSECTION"));
+}
+
 #endif
 #if (1)  // Part 2. Команда TRUNCATE
 
@@ -69,8 +76,7 @@ TEST_F(CommandProcessorTest, Intersection_WhenTablesOverlap_ReturnsRowsAndOk) {
     ASSERT_EQ("OK\n", processor.process("INSERT B 6 flour"));
     ASSERT_EQ("OK\n", processor.process("INSERT B 4 example"));
     ASSERT_EQ("OK\n", processor.process("INSERT B 3 proposal"));
-    EXPECT_EQ("3,violation,proposal\n4,quality,example\nOK\n",
-              processor.process("INTERSECTION"));
+    EXPECT_EQ("3,violation,proposal\n4,quality,example\nOK\n", processor.process("INTERSECTION"));
 }
 
 // Test 3.3. Симметрическая разность пустых таблиц возвращает только признак успеха.
@@ -84,8 +90,7 @@ TEST_F(CommandProcessorTest, SymmetricDifference_WhenTablesOverlap_ReturnsRowsAn
     ASSERT_EQ("OK\n", processor.process("INSERT A 3 violation"));
     ASSERT_EQ("OK\n", processor.process("INSERT A 0 lean"));
     ASSERT_EQ("OK\n", processor.process("INSERT B 3 proposal"));
-    EXPECT_EQ("0,lean,\n6,,flour\nOK\n",
-              processor.process("SYMMETRIC_DIFFERENCE"));
+    EXPECT_EQ("0,lean,\n6,,flour\nOK\n", processor.process("SYMMETRIC_DIFFERENCE"));
 }
 
 #endif
@@ -121,29 +126,22 @@ TEST_F(CommandProcessorTest, Insert_WhenNameIsMissing_ReturnsInvalidArgumentsErr
     EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT A 1"));
 }
 
-// Test 5.2. INSERT с лишним аргументом возвращает ошибку.
-TEST_F(CommandProcessorTest, Insert_WhenExtraArgumentIsPassed_ReturnsInvalidArgumentsError) {
-    EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT A 1 sweater extra"));
-}
-
-// Test 5.3. TRUNCATE с неверным количеством аргументов возвращает ошибку.
+// Test 5.2. TRUNCATE с неверным количеством аргументов возвращает ошибку.
 TEST_F(CommandProcessorTest, Truncate_WhenArgumentCountIsInvalid_ReturnsError) {
     EXPECT_EQ("ERR invalid arguments\n", processor.process("TRUNCATE"));
     EXPECT_EQ("ERR invalid arguments\n", processor.process("TRUNCATE A extra"));
 }
 
-// Test 5.4. Команды выборки не принимают аргументы.
+// Test 5.3. Команды выборки не принимают аргументы.
 TEST_F(CommandProcessorTest, SelectCommands_WhenArgumentIsPassed_ReturnInvalidArgumentsError) {
     EXPECT_EQ("ERR invalid arguments\n", processor.process("INTERSECTION extra"));
-    EXPECT_EQ("ERR invalid arguments\n",
-              processor.process("SYMMETRIC_DIFFERENCE extra"));
+    EXPECT_EQ("ERR invalid arguments\n", processor.process("SYMMETRIC_DIFFERENCE extra"));
 }
 
-// Test 5.5. Повторные, начальные и конечные пробелы отклоняются.
+// Test 5.4. Повторные и начальные пробелы отклоняются.
 TEST_F(CommandProcessorTest, Process_WhenSpacesAreNotStrict_ReturnsError) {
     EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT  A 1 sweater"));
     EXPECT_EQ("ERR unknown command\n", processor.process(" INSERT A 1 sweater"));
-    EXPECT_EQ("ERR invalid arguments\n", processor.process("INSERT A 1 sweater "));
 }
 
 #endif
@@ -167,8 +165,7 @@ TEST_F(CommandProcessorTest, Insert_WhenIdExceedsIntRange_ReturnsInvalidIdError)
 
 // Test 6.4. Слишком длинное числовое значение возвращает ошибку.
 TEST_F(CommandProcessorTest, Insert_WhenIdExceedsParserRange_ReturnsInvalidIdError) {
-    EXPECT_EQ("ERR invalid id\n",
-              processor.process("INSERT A 999999999999999999999999 sweater"));
+    EXPECT_EQ("ERR invalid id\n", processor.process("INSERT A 999999999999999999999999 sweater"));
 }
 
 // Test 6.5. Пустой идентификатор возвращает ошибку.
