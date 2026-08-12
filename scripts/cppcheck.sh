@@ -14,7 +14,7 @@ source "$SCRIPT_DIR/lib/config.sh"
 source "$LIB_DIR/logging.sh"
 
 CPPCHECK_FLAGS=(
-    --std=c++14                     # Использовать стандарт C++14
+    --std=c++17                     # Использовать стандарт C++17
     --enable=warning                # Реальные проблемы
     --enable=performance            # Потенциальные узкие места
     --enable=portability            # Переносимость

@@ -10,6 +10,7 @@
 #include <vector>
 
 struct sqlite3;
+struct sqlite3_stmt;
 
 /**
  * @brief Таблица данных, доступная через протокол join_server.
@@ -89,14 +90,20 @@ private:
     void execute(const std::string& query);
 
     /**
-     * @brief Выполняет SQL-запрос объединения таблиц.
-     * @param query Текст SQL-запроса.
+     * @brief Выполняет подготовленный SQL-запрос объединения таблиц.
+     * @param statement Подготовленный SQL-запрос.
      * @return Строки результата запроса.
      */
-    std::vector<JoinedRow> select_joined_rows(const std::string& query);
+    std::vector<JoinedRow> select_joined_rows(sqlite3_stmt* statement);
 
     /// Соединение с SQLite.
     sqlite3* m_Database = nullptr;
+
+    /// Подготовленный запрос пересечения таблиц.
+    sqlite3_stmt* m_IntersectionStatement = nullptr;
+
+    /// Подготовленный запрос симметрической разности таблиц.
+    sqlite3_stmt* m_SymmetricDifferenceStatement = nullptr;
 };
 
 #endif  // DATABASE_H
